@@ -1,11 +1,10 @@
-# from fake_useragent import UserAgent
-# from selenium import webdriver
-# from selenium.webdriver.common.keys import Keys
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support import expected_conditions as EC
-
+import requests
 from requests_html import HTMLSession
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
+
+headers = {"User-Agent": UserAgent().random}    
 
 class Parser:
 
@@ -25,36 +24,51 @@ class Parser:
             "https://www.radioparts.com.au/category/service"
                 ]
 
-    def settings(self):
-       global session
-       session = HTMLSession()
-        # global driver
 
-        # options = webdriver.FirefoxOptions()
-        # # options.add_argument("--headless")
-        # options.add_argument("--width=800")
-        # options.add_argument("--height=600")
-        # options.set_preference("general.useragent.override", UserAgent().random)
-        # driver = webdriver.Firefox(options=options)
-        # driver.implicitly_wait(10) # seconds
+    @staticmethod
+    def parsing(html):
+
+        def dressing_function():
+            # ныряет
+            pass
+
+        def receiving_function(link):
+            # получает
+
+            if BeautifulSoup(link.text, "")
+            session = HTMLSession()
+
+            response = session.get(link)
+            
+
+        print("Начинаем парсить")
+
+        bs = BeautifulSoup(html, "html.parser")
+
+        links = [link.find("a").attrs["href"] for link in bs.find_all("div", {"class": "cv-zone-category product"})]
+
+        for link in links:
+            internal_link = requests.get(f"https://www.radioparts.com.au{link}", headers=headers)
+            if BeautifulSoup(internal_link.text, "html.parser").find("div", {"class": "cv-zone-category product" }):
+                dressing_function()
+                print("true block")
+            else:
+                receiving_function(f"https://www.radioparts.com.au{link}")
+                print("false block")
 
 
 
     def loader(self):
-
         for link in self.link:
-            response = session.get(link)
-            # print(link)
-            print(response.html.absolute_links)
-        # for link in self.link:
-            # driver.get(link)
-        # elem = driver.find_element(By.NAME, "q")
-        # elem.clear()
-        # elem.send_keys("pycon")
-        # elem.send_keys(Keys.RETURN)
+            print("Загружаем ссылку - ", link)
+            session = requests.get(link, headers=headers)
+            print("Статус код", session.status_code)
+            self.parsing(session.text)
+
+
 
 def main():
-    Parser().settings()
+
     Parser().loader()
     # driver.close()
 
