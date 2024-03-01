@@ -1,10 +1,23 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver import ActionChains
 import requests
-from requests_html import HTMLSession
+import time
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 
 
 headers = {"User-Agent": UserAgent().random}    
+
+options = webdriver.ChromeOptions()
+options.add_argument("--headless")
+# options.add_argument("--width=800")
+# options.add_argument("--height=600")
+options.add_argument(f"User-Agent={UserAgent().random}")
+driver = webdriver.Chrome(options=options)
+driver.implicitly_wait(100) # seconds
 
 class Parser:
 
@@ -35,11 +48,29 @@ class Parser:
         def receiving_function(link):
             # получает
 
-            if BeautifulSoup(link.text, "")
-            session = HTMLSession()
+            html = requests.get(link, headers=headers)
 
-            response = session.get(link)
-            
+            while True:
+                if BeautifulSoup(html.text, "html.parser").find("button", {"class": "btn cv-refresh"}):
+                    print("Обнаружена кнопка")
+                    driver.get(link)
+                    time.sleep(5)
+                    iframe = driver.find_element(By.CSS_SELECTOR, "#cv-zone-pagecontent-after")
+                    ActionChains(driver).scroll_to_element(iframe).perform()
+                    time.sleep(5)
+                    driver.find_element(By.CSS_SELECTOR, ".cv-refresh").click()
+                    time.sleep(5)
+                    main_page = driver.find_element(By.TAG_NAME, "html")
+                    html = main_page.get_attribute("innerHTML")
+                    bs = BeautifulSoup(html, "html.parser").find_all("div", {"class": "product"})
+                    print(len(bs))
+                else:
+                    break
+
+                driver.close()
+                
+                exit()
+
 
         print("Начинаем парсить")
 
